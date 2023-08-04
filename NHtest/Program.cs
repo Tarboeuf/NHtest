@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Windows;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.IO;
-using System.Linq;
 using System.Text;
 using FluentNHibernate.Cfg;
 using FluentNHibernate.Cfg.Db;
@@ -11,13 +8,9 @@ using FluentNHibernate.Mapping;
 using Microsoft.SqlServer.Management.SqlParser.Parser;
 using NHibernate;
 using NHibernate.Cfg;
-using NHibernate.Criterion;
 using NHibernate.SqlCommand;
 using NHibernate.Tool.hbm2ddl;
-using System.Linq.Expressions;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
-using UnaryExpression = System.Linq.Expressions.UnaryExpression;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace NHtest
