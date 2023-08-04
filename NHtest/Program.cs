@@ -32,86 +32,12 @@ namespace NHtest
             using var session = sessionFactory.WithOptions()
                 .Interceptor(interceptor).OpenSession();
 
-            using (var transaction = session.BeginTransaction())
-            {
-                var customer1 = new Customer1 { CustomerCode = "123", Name = "1", Prop1 = "1", Age = 1 };
-                session.SaveOrUpdate(customer1);
-
-                var customer2 = new CustomerTest { CustomerCode = "123", Name = "2", Prop2 = "2", Age = 2, Addresses = new List<Address>{ new(), new()}};
-                session.SaveOrUpdate(customer2);
-                transaction.Commit();
-            }
-            QueryOver(session);
-            //Linq(session);
-            Criteria(session);
+            using var transaction = session.BeginTransaction();
+            var customer = new Customer { Addresses = new List<Address>{ new(), new()}};
+            session.SaveOrUpdate(customer);
+            transaction.Commit();
         }
-
-        private static void Linq(ISession session)
-        {
-            var l = session.Query<Customer>()
-                .Where(c => c.Name == "1")
-                .Where(c => ((Customer1)c).Age == 1 || ((CustomerTest)c).Age == 1)
-                .Select(c => c.Id)
-                .ToList();
-            Console.WriteLine(l.Count);
-        }
-
-        private static void Criteria(ISession session)
-        {
-            var crit = session.CreateCriteria<Customer>("c")
-                .SetProjection(Projections.Property("Id"))
-                .CreateEntityAlias("cust2", Restrictions.EqProperty("c.Id", "cust2.Id"), JoinType.LeftOuterJoin, typeof(CustomerTest).FullName)
-                //.CreateEntityAlias("cust2", Restrictions.EqProperty("c.Id", "cust2.Id"), JoinType.LeftOuterJoin, typeof(Customer2).FullName)
-                .Add(Restrictions.EqProperty("Age", "cust2.Age"));
-
-            Console.WriteLine(crit.List().Count);
-        }
-
-        private static void QueryOver(ISession session)
-        {
-            Customer cust = null;
-
-            var query = NHibernate.Criterion.QueryOver.Of(() => cust);
-            query.Where(Equal<Customer, Customer1, int>(query, c => c.Age, 1, cust))
-                .Where(Equal<Customer, CustomerTest, int>(query, c => c.Age, 2, cust));
-
-            //query.UnderlyingCriteria.CreateAlias("tblCustomerTest", "test").Add(Restrictions.Eq("test.Age", 123));
-            foreach (var customer in query.Select(c => c.Id).GetExecutableQueryOver(session).List<int>())
-            {
-                Console.WriteLine($"{customer}");
-            }
-        }
-
-
-
-
-        private static ICriterion Equal<TRoot, TSubType, TKey>(QueryOver<TRoot, TRoot> query, Expression<Func<TSubType, object>> property, TKey value, Customer cust)
-            where TRoot : Customer
-            where TSubType : TRoot
-        {
-            Type subType = typeof(TSubType);
-            string name = subType.Name.ToLower();
-
-            query.UnderlyingCriteria
-                .CreateEntityAlias(
-                    name, 
-                    Restrictions.EqProperty(Projections.Property(() => cust.Id), $"{name}.Id"), 
-                    JoinType.LeftOuterJoin,
-                    subType.FullName);
-
-            var propExpression = ((MemberExpression)((UnaryExpression)property.Body).Operand);
-
-            return Restrictions.Eq($"{name}.{propExpression.Member.Name}", value);
-        }
-
-
-
-
-        private static QueryOver<Customer, Customer> GetDetachedQuery(Customer customer)
-        {
-            var detachedQuery = NHibernate.Criterion.QueryOver.Of<Customer>().Where(c => c.Name == customer.Name).Select(c => c.Name);
-            return detachedQuery;
-        }
+        
 
         private static ISessionFactory CreateSessionFactory()
         {
@@ -155,28 +81,6 @@ namespace NHtest
     {
         public virtual int Id { get; set; }
 
-        public virtual string CustomerCode { get; set; }
-
-        public virtual string Name { get; set; }
-    }
-    public class Customer1 : Customer
-    {
-        public virtual int Age { get; set; }
-        public virtual string Prop1 { get; set; }
-    }
-    public abstract class Customer2 : Customer
-    {
-        public virtual string Prop2 { get; set; }
-
-    }
-    public class Customer21 : Customer2
-    {
-        public virtual int Age { get; set; }
-        public virtual int CustomerId { get; set; }
-
-    }
-    public class CustomerTest : Customer21
-    {
         public virtual IList<Address> Addresses { get; set; }
     }
 
@@ -195,6 +99,7 @@ namespace NHtest
             Table("tblAddress");
         }
     }
+
     public class CustomerMap : ClassMap<Customer>
     {
         public CustomerMap()
@@ -202,53 +107,13 @@ namespace NHtest
             Id(x => x.Id)
                 .GeneratedBy.Identity();
 
-            Map(x => x.CustomerCode);
-            Map(x => x.Name);
-            Table("tblCustomer");
-        }
-    }
-    public class Customer1Map : SubclassMap<Customer1>
-    {
-        public Customer1Map()
-        {
-            KeyColumn("Id");
-            Map(x => x.Age);
-            Map(x => x.Prop1);
-            Table("tblCustomer1");
-        }
-    }
-
-    public class Customer2Map : SubclassMap<Customer2>
-    {
-        public Customer2Map()
-        {
-            KeyColumn("Id");
-            
-            Map(x => x.Prop2);
-            Table("tblCustomer2");
-        }
-    }
-    public class Customer21Map : SubclassMap<Customer21>
-    {
-        public Customer21Map()
-        {
-            KeyColumn("CustomerId");
-
-            Map(x => x.Age);
-            Table("tblCustomer21");
-        }
-    }
-    public class CustomerTestMap : SubclassMap<CustomerTest>
-    {
-        public CustomerTestMap()
-        {
-            KeyColumn("CustomerId");
             HasMany(t => t.Addresses)
                 .KeyColumn("Id")
                 .Cascade.AllDeleteOrphan();
-            Table("tblCustomerTest");
+            Table("tblCustomer");
         }
     }
+
     public class LoggingInterceptor : EmptyInterceptor
     {
         TSql120Parser _parser = new(false);
