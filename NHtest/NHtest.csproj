@@ -2,15 +2,20 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentNHibernate" Version="3.1.0" />
-    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="5.0.9" />
-    <PackageReference Include="NHibernate.Extensions.Sqlite" Version="5.0.9" />
-    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.0.6" />
-    <PackageReference Include="System.Data.SQLite" Version="1.0.115" />
+    <PackageReference Include="FluentNHibernate" Version="3.2.1" />
+    <PackageReference Include="Irony" Version="1.2.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="7.0.9" />
+    <PackageReference Include="Microsoft.SqlServer.Management.SqlParser" Version="170.9.0" />
+    <PackageReference Include="Microsoft.SqlServer.TransactSql.ScriptDom" Version="161.8901.0" />
+    <PackageReference Include="NHibernate.Extensions.Sqlite" Version="7.0.5" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.5" />
+    <PackageReference Include="System.Data.SQLite" Version="1.0.118" />
+    <PackageReference Include="TextCopy" Version="6.2.1" />
   </ItemGroup>
 
   <ItemGroup>
