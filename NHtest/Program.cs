@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using FluentNHibernate.Cfg;
 using FluentNHibernate.Cfg.Db;
 using FluentNHibernate.Mapping;
 using Microsoft.SqlServer.Management.SqlParser.Parser;
 using NHibernate;
 using NHibernate.Cfg;
-using NHibernate.SqlCommand;
 using NHibernate.Tool.hbm2ddl;
-using Microsoft.SqlServer.TransactSql.ScriptDom;
 
 
 namespace NHtest
@@ -60,16 +56,6 @@ namespace NHtest
         }
     }
 
-    internal class TokenInfo
-    {
-        public int Start { get; internal set; }
-        public int End { get; internal set; }
-        public bool IsPairMatch { get; internal set; }
-        public bool IsExecAutoParamHelp { get; internal set; }
-        public string Sql { get; internal set; }
-        public Tokens Token { get; internal set; }
-    }
-
     public class Customer
     {
         public virtual int Id { get; set; }
@@ -104,48 +90,6 @@ namespace NHtest
                 .KeyColumn("Id")
                 .Cascade.AllDeleteOrphan();
             Table("tblCustomer");
-        }
-    }
-
-    public class LoggingInterceptor : EmptyInterceptor
-    {
-        TSql120Parser _parser = new(false);
-        Sql120ScriptGenerator _generator = new (new SqlScriptGeneratorOptions()
-        {
-            KeywordCasing = KeywordCasing.Uppercase,
-            IncludeSemicolons = true,
-            NewLineBeforeFromClause = true,
-            NewLineBeforeOrderByClause = true,
-            NewLineBeforeWhereClause = true,
-            AlignClauseBodies = true
-        });
-        public override SqlString OnPrepareStatement(SqlString sql)
-        {
-            Console.WriteLine("NH: ");
-            var parsedQuery = _parser.Parse(new StringReader(ToString(sql)), out var errors);
-
-            _generator.GenerateScript(parsedQuery, out var formattedQuery);
-            Console.WriteLine(formattedQuery);
-
-            return base.OnPrepareStatement(sql);
-        }
-
-        public string ToString(SqlString sql)
-        {
-            StringBuilder builder = new StringBuilder();
-            int inc = 0;
-            foreach (var part in sql)
-            {
-                if (part is Parameter)
-                {
-                    builder.Append($"@p{inc++}");
-                }
-                else
-                {
-                    builder.Append(part);
-                }
-            }
-            return builder.ToString();
         }
     }
 }
